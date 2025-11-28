@@ -11,6 +11,7 @@ class RollupMetrics(Base):
     end_time=Column(DateTime,nullable=False,index=True)
     min=Column(Float,nullable=False)
     max=Column(Float,nullable=False)
+    sum=Column(Float,nullable=False)
     avg=Column(Float,nullable=False)
     count=Column(Integer,nullable=False)
     labels=Column(JSON,nullable=True,default={})

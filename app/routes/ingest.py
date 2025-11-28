@@ -30,7 +30,7 @@ async def ingest_metric(metric:IngestRequest,db:Session=Depends(get_db)):
         raise HTTPException(status_code=400,detail=str(e))
     
     try:
-        metric_record=RawMetric(
+        metric_record=RawMetrics(
             metric_name=metric.metric_name,
             value=metric.value,
             timestamp=metric.timestamp,

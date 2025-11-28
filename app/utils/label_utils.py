@@ -1,5 +1,10 @@
 from app.models.raw_metrics import RawMetric
 from typing import set
+from sqlalchemy.orm import Session
+from typing import Optional, Dict
+import hashlib
+import json
+
 
 def check_cardinality(
     db: Session,
@@ -29,3 +34,14 @@ def check_cardinality(
             return False
 
     return True
+
+def normalize_labels(labels:Optional[Dict[str,str]])->Dict[str,str]:
+    if not labels:
+        return {}
+    return dict(sorted(labels.items()))
+
+def hash_labels(labels:Optional[Dict[str,str]])->str:
+    normalized=normalize_labels(labels)
+    labels_str=json.dumps(normalized,sort_keys=True)
+    return hashlib.md5(labels_str.encode()).hexdigest()
+
