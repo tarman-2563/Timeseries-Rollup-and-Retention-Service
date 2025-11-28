@@ -1,5 +1,5 @@
 from fastapi import APIRouter,Depends,HTTPException,status
-from app.models.raw_metrics import RawMetric
+from app.models.raw_metrics import RawMetrics
 from sqlalchemy.orm import Session
 from app.db import get_db
 from app.schemas.ingest import IngestRequest,IngestResponse

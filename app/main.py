@@ -3,12 +3,14 @@ from sqlalchemy.orm import Session
 from app.db import engine, get_db, Base
 from app.models import raw_metrics
 from app.routes import metrics
+from app.routes.ingest import ingestRouter
 
 Base.metadata.create_all(bind=engine)
 
 app=FastAPI()
 
 app.include_router(metrics.metricsRouter)
+app.include_router(ingestRouter)
 
 @app.get("/")
 def home():
