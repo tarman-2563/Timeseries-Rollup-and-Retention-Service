@@ -40,7 +40,7 @@ class RetentionService:
         try:
             deleted_count=self.db.query(RollupMetrics).filter(
                 RollupMetrics.window==window,
-                RollupMetrics.timestamp < cutoff
+                RollupMetrics.start_time < cutoff
             ).delete(synchronize_session=False)
             self.db.commit()
             return deleted_count

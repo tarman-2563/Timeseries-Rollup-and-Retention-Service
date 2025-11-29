@@ -33,7 +33,7 @@ class RollupService:
         for window in self.windows:
             rollups=await self.compute_window_aggregation(raw_metrics,window,min_timestamp,max_timestamp)
 
-            if rolllups:
+            if rollups:
                 self.db.bulk_save_objects(rollups)
                 self.db.commit()
                 stats["rollup_metrics_created"]+=len(rollups)
@@ -47,19 +47,20 @@ class RollupService:
             min_timestamp:datetime,
             max_timestamp:datetime
     )->List[RollupMetrics]:
-        buckets=generate_time_buckets(start_time,end_time,window)
         grouped_metrics={}
+        window_delta=parse_window(window)
 
         for metric in raw_metrics:
-            metric_bucket=round_to_window(metric.timestamp,window)
+            bucket_start=round_to_window(metric.timestamp,window)
             labels_hash=hash_labels(metric.labels)
-            key=(metric.metric_name,labels_hash,metric.labels)
+            key=(metric.metric_name,bucket_start,labels_hash,metric.labels)
+            if key not in grouped_metrics:
+                grouped_metrics[key]=[]
             grouped_metrics[key].append(metric)
 
         rollups=[]
-        window_delta=parse_window(window)
 
-        for (metric_name,labels_hash,bucket_start,labels),group_metrics in grouped_metrics.items():
+        for (metric_name,bucket_start,labels_hash,labels),group_metrics in grouped_metrics.items():
             values=[m.value for m in group_metrics]
 
             rollup=RollupMetrics(

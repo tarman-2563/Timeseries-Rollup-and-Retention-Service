@@ -1,5 +1,4 @@
-from app.models.raw_metrics import RawMetric
-from typing import set
+from app.models.raw_metrics import RawMetrics
 from sqlalchemy.orm import Session
 from typing import Optional, Dict
 import hashlib
@@ -16,8 +15,8 @@ def check_cardinality(
         return True
 
     distinct_label_sets = (
-        db.query(RawMetric.labels)
-        .filter(RawMetric.metric_name == metric_name)
+        db.query(RawMetrics.labels)
+        .filter(RawMetrics.metric_name == metric_name)
         .distinct()
         .all()
     )

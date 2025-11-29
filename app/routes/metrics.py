@@ -16,5 +16,5 @@ def test_connection(db:Session=Depends(get_db)):
     except Exception as e:
         return{
             "status":"error",
-            "message":f"Database connection failed:{str(e)}"
+            "message":f"Database connection failed: {str(e)}"
         }

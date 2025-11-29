@@ -17,7 +17,7 @@ class RollupMetrics(Base):
     labels=Column(JSON,nullable=True,default={})
     created_at=Column(DateTime,nullable=False,default=func.now())
     __table_args__=(
-        UniqueConstraint("metric_name","window","start_time","labels","name='uix_rollup_metric'"),
+        UniqueConstraint("metric_name","window","start_time",name='uix_rollup_metric'),
         Index("index_rollup_metric_time","metric_name","start_time")
     )
 

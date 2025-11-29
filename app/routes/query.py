@@ -13,7 +13,7 @@ queryRouter=APIRouter()
 async def query_metrics(query:QuerySchema,db:Session=Depends(get_db)):
     try:
         query_service=QueryService(db)
-        results=await query_service.execute_query(query)
+        results=await query_service.query_metrics(query)
         if not results:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="No metrics found for the given query")
         return results

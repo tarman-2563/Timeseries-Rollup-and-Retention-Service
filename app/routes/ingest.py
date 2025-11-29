@@ -3,7 +3,7 @@ from app.models.raw_metrics import RawMetrics
 from sqlalchemy.orm import Session
 from app.db import get_db
 from app.schemas.ingest import IngestRequest,IngestResponse
-
+from app.utils.label_utils import check_cardinality as check_cardinality_limit
 
 ingestRouter=APIRouter()
 
@@ -18,7 +18,7 @@ def check_cardinality(
 ) -> None:
     if limit is None:
         limit=100
-    if not check_cardinality(db,metric_name,labels,limit):
+    if not check_cardinality_limit(db,metric_name,labels,limit):
         raise CardinalityExceededException(f"Cardinality limit of {limit} exceeded for metric '{metric_name}'")
 
 @ingestRouter.post("/metrics/ingest",response_model=IngestResponse,status_code=200)

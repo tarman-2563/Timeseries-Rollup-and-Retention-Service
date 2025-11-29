@@ -85,7 +85,7 @@ class QueryService:
             RollupMetrics.window==window
         )
         if labels:
-            query=self.filter_by_labels(query,labels,RollupMetrics)
+            query=self._filter_by_labels(query,labels,RollupMetrics)
         
         results=query.order_by(RollupMetrics.start_time).all()
 
