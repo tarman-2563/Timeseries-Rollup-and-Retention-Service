@@ -33,6 +33,18 @@ class QuerySchema(BaseModel):
             }
         }
 
+class DataPointSchema(BaseModel):
+    timestamp:datetime=Field(...,description="Timestamp of the data point")
+    value: Optional[float] = Field(..., description="Value (can be null for gap-filled points)")
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "timestamp": "2025-01-01T10:10:00Z",
+                "value": 78.2
+            }
+        }
+
 class QueryResponseSchema(BaseModel):
     metric_name:str=Field(...,description="Name of the queried metric")
     function:str=Field(...,description="Aggregation function applied")
