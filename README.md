@@ -27,9 +27,6 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 - `POST /metrics/ingest` - Ingest a metric
 - `POST /query` - Query metrics with aggregation
 
-### Test Connection
-- `GET /metrics/test/connection` - Test database connection
-
 ## Background Jobs
 
 ### Rollup Job (runs every 60 seconds)
