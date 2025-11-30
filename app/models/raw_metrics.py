@@ -11,12 +11,12 @@ class RawMetrics(Base):
     labels=Column(JSON,nullable=True,default={})
     tenant_id=Column(String,nullable=True,index=True)
     created_at=Column(DateTime,nullable=False,default=func.now())
-    table_args=(
-        Index("index_metric_timestamp","metric_name","timestamp")
+    __table_args__=(
+        Index("index_metric_timestamp","metric_name","timestamp"),
     )
 
-def represent_raw_metric(self):
-    return f"<RawMetric(id={self.id},metric_name='{self.metric_name}',value={self.value},timestamp={self.timestamp})>"    
+    def __repr__(self):
+        return f"<RawMetric(id={self.id},metric_name='{self.metric_name}',value={self.value},timestamp={self.timestamp})>"    
 
 
     

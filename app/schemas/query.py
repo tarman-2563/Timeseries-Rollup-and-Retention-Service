@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 from datetime import datetime
 from enum import Enum
 
@@ -48,16 +48,17 @@ class DataPointSchema(BaseModel):
 class QueryResponseSchema(BaseModel):
     metric_name:str=Field(...,description="Name of the queried metric")
     function:str=Field(...,description="Aggregation function applied")
-    timestamp:datetime=Field(...,description="Timestamp of the aggregated data point")
-    value:float=Field(...,description="Aggregated value")
+    points:List[DataPointSchema]=Field(...,description="List of data points")
 
     class Config:
         schema_extra={
             "example":{
                 "metric_name":"cpu_usage",
                 "function":"avg",
-                "timestamp":"2024-01-01T12:00:00Z",
-                "value":57.3
+                "points":[
+                    {"timestamp":"2024-01-01T12:00:00Z","value":57.3},
+                    {"timestamp":"2024-01-01T12:01:00Z","value":58.1}
+                ]
             }
         }
 

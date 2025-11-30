@@ -102,7 +102,7 @@ class QueryService:
     
     def _filter_by_labels(self,query,labels:Dict[str,str],model):
         for key,value in labels.items():
-            query=query.filter(model.labels[key]==value)
+            query = query.filter(model.labels.op("->>")(key) == value)
         return query
     
     async def apply_aggregation_function(

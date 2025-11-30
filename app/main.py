@@ -2,17 +2,21 @@ from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
 from app.db import engine, get_db, Base
 from app.models import raw_metrics
-from app.routes import metrics
 from app.routes.ingest import ingestRouter
 from app.routes.query import queryRouter
+from app.schema_fix import fix_schema
+from sqlalchemy import text
 
 Base.metadata.create_all(bind=engine)
 
 app=FastAPI()
 
-app.include_router(metrics.metricsRouter)
 app.include_router(ingestRouter)
 app.include_router(queryRouter)
+
+@app.on_event("startup")
+def on_startup():
+    fix_schema()
 
 @app.get("/")
 def home():
@@ -25,7 +29,6 @@ def health_check():
 @app.get("/db/status")
 def db_status(db: Session = Depends(get_db)):
     try:
-        from sqlalchemy import text
         db.execute(text("SELECT 1"))
         return {
             "status": "connected",
