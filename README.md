@@ -27,6 +27,9 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 - `POST /metrics/ingest` - Ingest a metric
 - `POST /query` - Query metrics with aggregation
 
+### Test Connection
+- `GET /metrics/test/connection` - Test database connection
+
 ## Background Jobs
 
 ### Rollup Job (runs every 60 seconds)
@@ -74,4 +77,30 @@ curl -X POST "http://localhost:8000/query" \
     "labels": {"host": "server1"},
     "function": "avg"
   }'
+```
+
+### List all metrics:
+```bash
+curl -X GET "http://localhost:8000/metrics/list?page=1&page_size=10"
+```
+
+### Get metric information:
+```bash
+curl -X GET "http://localhost:8000/metrics/cpu_usage/info"
+```
+
+### Query raw data:
+```bash
+curl -X GET "http://localhost:8000/query/raw?metric_name=cpu_usage&start_time=2024-01-01T00:00:00Z&end_time=2024-01-01T01:00:00Z"
+```
+
+### Query rollup data:
+```bash
+curl -X GET "http://localhost:8000/query/rollup?metric_name=cpu_usage&start_time=2024-01-01T00:00:00Z&end_time=2024-01-01T12:00:00Z&window=5m"
+```
+
+### List available rollups:
+```bash
+curl -X GET "http://localhost:8000/rollups"
+curl -X GET "http://localhost:8000/rollups?metric_name=cpu_usage"
 ```

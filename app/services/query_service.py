@@ -192,3 +192,73 @@ class QueryService:
     
 
         
+  
+  async def query_raw_data(
+        self,
+        metric_name: str,
+        start_time: datetime,
+        end_time: datetime,
+        labels: Dict[str, str] = None
+    ) -> Dict:
+        """
+        Query raw data without any aggregation
+        """
+        normalized_labels = normalize_labels(labels) if labels else {}
+        
+        data_points = await self._query_raw_data(
+            metric_name,
+            start_time,
+            end_time,
+            normalized_labels
+        )
+        
+        return {
+            "metric_name": metric_name,
+            "points": [
+                {"timestamp": dp["timestamp"], "value": dp["value"]}
+                for dp in data_points
+            ],
+            "total_points": len(data_points)
+        }
+    
+    async def query_rollup_data(
+        self,
+        metric_name: str,
+        start_time: datetime,
+        end_time: datetime,
+        window: str,
+        labels: Dict[str, str] = None
+    ) -> Dict:
+        """
+        Query pre-computed rollup data
+        """
+        valid_windows = ["1m", "5m", "1h"]
+        if window not in valid_windows:
+            raise ValueError(f"Invalid window '{window}'. Must be one of: {valid_windows}")
+        
+        normalized_labels = normalize_labels(labels) if labels else {}
+        
+        data_points = await self._query_rollup_data(
+            metric_name,
+            start_time,
+            end_time,
+            normalized_labels,
+            window
+        )
+        
+        return {
+            "metric_name": metric_name,
+            "window": window,
+            "points": [
+                {
+                    "timestamp": dp["timestamp"],
+                    "min": dp["min"],
+                    "max": dp["max"],
+                    "avg": dp["avg"],
+                    "sum": dp.get("sum", dp["avg"] * dp["count"]),  # Calculate sum if not present
+                    "count": dp["count"]
+                }
+                for dp in data_points
+            ],
+            "total_points": len(data_points)
+        }

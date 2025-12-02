@@ -4,6 +4,8 @@ from app.db import engine, get_db, Base
 from app.models import raw_metrics
 from app.routes.ingest import ingestRouter
 from app.routes.query import queryRouter
+from app.routes.metrics import metricsRouter
+from app.routes.rollup import rollupRouter
 from app.schema_fix import fix_schema
 from sqlalchemy import text
 
@@ -13,6 +15,8 @@ app=FastAPI()
 
 app.include_router(ingestRouter)
 app.include_router(queryRouter)
+app.include_router(metricsRouter)
+app.include_router(rollupRouter)
 
 @app.on_event("startup")
 def on_startup():
