@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from app.db import engine, get_db, Base
 from app.models import raw_metrics
@@ -6,6 +7,8 @@ from app.routes.ingest import ingestRouter
 from app.routes.query import queryRouter
 from app.routes.metrics import metricsRouter
 from app.routes.rollup import rollupRouter
+from app.routes.anomaly import anomalyRouter
+from app.routes.backfill import backfillRouter
 from app.schema_fix import fix_schema
 from sqlalchemy import text
 
@@ -13,10 +16,20 @@ Base.metadata.create_all(bind=engine)
 
 app=FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.include_router(ingestRouter)
 app.include_router(queryRouter)
 app.include_router(metricsRouter)
 app.include_router(rollupRouter)
+app.include_router(anomalyRouter)
+app.include_router(backfillRouter)
 
 @app.on_event("startup")
 def on_startup():

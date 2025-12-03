@@ -38,6 +38,15 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ### Rollups
 - `GET /rollups` - List all available rollups
 
+### Anomaly Detection
+- `GET /anomaly/detect` - Detect anomalies using z-score analysis
+
+### Backfill
+- `POST /backfill/import` - Import historical data in bulk
+
+### Dashboard
+- `GET /dashboard` - Interactive web dashboard for visualization
+
 ## Background Jobs
 
 ### Rollup Job (runs every 60 seconds)
@@ -137,3 +146,35 @@ curl "http://localhost:8000/rollups"
 ```bash
 curl "http://localhost:8000/rollups?metric_name=cpu_usage"
 ```
+
+### Anomaly Detection
+
+**Detect anomalies:**
+```bash
+curl "http://localhost:8000/anomaly/detect?metric_name=cpu_usage&start_time=2025-12-03T00:00:00Z&end_time=2025-12-03T23:59:59Z&threshold=3.0"
+```
+
+### Backfill
+
+**Import historical data:**
+```bash
+curl -X POST "http://localhost:8000/backfill/import" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "metrics": [
+      {
+        "metric_name": "cpu_usage",
+        "value": 75.5,
+        "timestamp": "2025-12-01T12:00:00Z",
+        "labels": {"host": "server1"}
+      },
+      {
+        "metric_name": "cpu_usage",
+        "value": 76.2,
+        "timestamp": "2025-12-01T12:01:00Z",
+        "labels": {"host": "server1"}
+      }
+    ]
+  }'
+```
+

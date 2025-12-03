@@ -253,3 +253,42 @@ class QueryService:
             ],
             "total_points": len(data_points)
         }
+
+    def fill_gaps(
+        self,
+        data_points: List[DataPointSchema],
+        start_time: datetime,
+        end_time: datetime,
+        interval_seconds: int = 60
+    ) -> List[DataPointSchema]:
+        if not data_points:
+            return []
+        
+        filled_points = []
+        current_time = start_time
+        data_index = 0
+        
+        while current_time <= end_time:
+            if data_index < len(data_points):
+                point = data_points[data_index]
+                point_time = point.timestamp
+                
+                time_diff = abs((point_time - current_time).total_seconds())
+                
+                if time_diff < interval_seconds / 2:
+                    filled_points.append(point)
+                    data_index += 1
+                else:
+                    filled_points.append(DataPointSchema(
+                        timestamp=current_time,
+                        value=None
+                    ))
+            else:
+                filled_points.append(DataPointSchema(
+                    timestamp=current_time,
+                    value=None
+                ))
+            
+            current_time += timedelta(seconds=interval_seconds)
+        
+        return filled_points
