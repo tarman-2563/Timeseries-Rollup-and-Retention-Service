@@ -2,7 +2,7 @@ import asyncio
 import logging
 import json
 import os
-from datetime import datetime,timedelta
+from datetime import datetime,timedelta,timezone
 from pathlib import Path
 from app.db import SessionLocal
 from app.services.rollup_service import RollupService
@@ -23,13 +23,13 @@ def load_last_processed_time()->datetime:
         except Exception as e:
             logger.error(f"Error loading state file: {e}")
 
-    return datetime.utcnow()-timedelta(hours=1)
+    return datetime.now(timezone.utc)-timedelta(hours=1)
 
 def save_last_processed_time(timestamp:datetime):
     try:
         state={
             "last_processed_time":timestamp.isoformat(),
-            "last_run":datetime.utcnow().isoformat()
+            "last_run":datetime.now(timezone.utc).isoformat()
         }
         with open(State_file,"w") as f:
             json.dump(state,f,indent=2)
@@ -43,9 +43,9 @@ async def run_rollup_job():
         since=load_last_processed_time()
         logger.info(f"Starting rollup job since {since.isoformat()}")
         rollup_service=RollupService(db)
-        start_time=datetime.utcnow()
+        start_time=datetime.now(timezone.utc)
         stats=await rollup_service.perform_rollups(since)
-        end_time=datetime.utcnow()
+        end_time=datetime.now(timezone.utc)
 
         processing_time=(end_time-start_time).total_seconds()
 
@@ -55,7 +55,7 @@ async def run_rollup_job():
                    f"for windows {stats['windows_processed']}"
         )
 
-        save_last_processed_time(datetime.utcnow())
+        save_last_processed_time(datetime.now(timezone.utc))
 
     except Exception as e:
         logger.error(f"Error during rollup job: {e}")

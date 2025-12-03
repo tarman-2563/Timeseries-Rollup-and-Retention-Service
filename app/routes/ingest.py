@@ -5,7 +5,7 @@ from app.db import get_db
 from app.schemas.ingest import IngestRequest,IngestResponse
 from app.utils.label_utils import check_cardinality as check_cardinality_limit
 
-ingestRouter=APIRouter()
+ingestRouter=APIRouter(prefix="/metrics", tags=["ingestion"])
 
 class CardinalityExceededException(Exception):
     pass
@@ -21,7 +21,7 @@ def check_cardinality(
     if not check_cardinality_limit(db,metric_name,labels,limit):
         raise CardinalityExceededException(f"Cardinality limit of {limit} exceeded for metric '{metric_name}'")
 
-@ingestRouter.post("/metrics/ingest",response_model=IngestResponse,status_code=200)
+@ingestRouter.post("/ingest",response_model=IngestResponse,status_code=200)
 
 async def ingest_metric(metric:IngestRequest,db:Session=Depends(get_db)):
     try:

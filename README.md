@@ -18,17 +18,25 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 ## API Endpoints
 
-### Health Check
+### Health
 - `GET /` - Basic health check
 - `GET /health` - Service status
 - `GET /db/status` - Database connection status
 
-### Metrics
-- `POST /metrics/ingest` - Ingest a metric
-- `POST /query` - Query metrics with aggregation
+### Ingestion
+- `POST /metrics/ingest` - Ingest a single metric
 
-### Test Connection
-- `GET /metrics/test/connection` - Test database connection
+### Metrics Discovery
+- `GET /metrics/list` - List all metrics with pagination
+- `GET /metrics/{metric_name}/info` - Get detailed metric information
+
+### Query
+- `POST /query` - Query with aggregation (auto-selects optimal source)
+- `GET /query/raw` - Fetch raw data without aggregation
+- `GET /query/rollup` - Fetch pre-computed rollup data
+
+### Rollups
+- `GET /rollups` - List all available rollups
 
 ## Background Jobs
 
@@ -51,56 +59,81 @@ python -m app.services.data_generator --metric cpu_usage --pattern sine_wave --d
 
 Patterns: noise, sine_wave, linear_trend, spike, combined
 
-## Example API Calls
+## API Examples
 
-### Ingest a metric:
+### Ingestion
+
+**Ingest a metric:**
 ```bash
 curl -X POST "http://localhost:8000/metrics/ingest" \
   -H "Content-Type: application/json" \
   -d '{
     "metric_name": "cpu_usage",
     "value": 75.5,
-    "timestamp": "2024-06-01T12:00:00Z",
-    "labels": {"host": "server1", "region": "us-west"},
-    "tenant_id": "tenant_123"
+    "timestamp": "2025-12-03T12:00:00Z",
+    "labels": {"host": "server1", "region": "us-west"}
   }'
 ```
 
-### Query metrics:
+### Metrics Discovery
+
+**List all metrics:**
+```bash
+curl "http://localhost:8000/metrics/list?page=1&page_size=10"
+```
+
+**Search metrics:**
+```bash
+curl "http://localhost:8000/metrics/list?search=cpu"
+```
+
+**Get metric details:**
+```bash
+curl "http://localhost:8000/metrics/cpu_usage/info"
+```
+
+### Query
+
+**Query with aggregation (POST):**
 ```bash
 curl -X POST "http://localhost:8000/query" \
   -H "Content-Type: application/json" \
   -d '{
     "metric_name": "cpu_usage",
-    "start_time": "2024-01-01T00:00:00Z",
-    "end_time": "2024-01-02T00:00:00Z",
+    "start_time": "2025-12-03T00:00:00Z",
+    "end_time": "2025-12-03T23:59:59Z",
     "labels": {"host": "server1"},
     "function": "avg"
   }'
 ```
 
-### List all metrics:
+Available functions: `avg`, `sum`, `min`, `max`, `count`, `rate`, `raw`
+
+**Query raw data (GET):**
 ```bash
-curl -X GET "http://localhost:8000/metrics/list?page=1&page_size=10"
+curl "http://localhost:8000/query/raw?metric_name=cpu_usage&start_time=2025-12-03T00:00:00Z&end_time=2025-12-03T23:59:59Z"
 ```
 
-### Get metric information:
+**Query raw data with labels:**
 ```bash
-curl -X GET "http://localhost:8000/metrics/cpu_usage/info"
+curl "http://localhost:8000/query/raw?metric_name=cpu_usage&start_time=2025-12-03T00:00:00Z&end_time=2025-12-03T23:59:59Z&labels=%7B%22host%22:%22server1%22%7D"
 ```
 
-### Query raw data:
+**Query rollup data (GET):**
 ```bash
-curl -X GET "http://localhost:8000/query/raw?metric_name=cpu_usage&start_time=2024-01-01T00:00:00Z&end_time=2024-01-01T01:00:00Z"
+curl "http://localhost:8000/query/rollup?metric_name=cpu_usage&start_time=2025-12-03T00:00:00Z&end_time=2025-12-03T12:00:00Z&window=5m"
 ```
 
-### Query rollup data:
+Available windows: `1m`, `5m`, `1h`
+
+### Rollups
+
+**List all rollups:**
 ```bash
-curl -X GET "http://localhost:8000/query/rollup?metric_name=cpu_usage&start_time=2024-01-01T00:00:00Z&end_time=2024-01-01T12:00:00Z&window=5m"
+curl "http://localhost:8000/rollups"
 ```
 
-### List available rollups:
+**List rollups for specific metric:**
 ```bash
-curl -X GET "http://localhost:8000/rollups"
-curl -X GET "http://localhost:8000/rollups?metric_name=cpu_usage"
+curl "http://localhost:8000/rollups?metric_name=cpu_usage"
 ```

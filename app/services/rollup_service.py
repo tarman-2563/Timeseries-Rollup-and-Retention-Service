@@ -53,14 +53,19 @@ class RollupService:
         for metric in raw_metrics:
             bucket_start=round_to_window(metric.timestamp,window)
             labels_hash=hash_labels(metric.labels)
-            key=(metric.metric_name,bucket_start,labels_hash,metric.labels)
+            key=(metric.metric_name,bucket_start,labels_hash)
             if key not in grouped_metrics:
-                grouped_metrics[key]=[]
-            grouped_metrics[key].append(metric)
+                grouped_metrics[key]={
+                    "metrics": [],
+                    "labels": metric.labels
+                }
+            grouped_metrics[key]["metrics"].append(metric)
 
         rollups=[]
 
-        for (metric_name,bucket_start,labels_hash,labels),group_metrics in grouped_metrics.items():
+        for (metric_name,bucket_start,labels_hash),group_data in grouped_metrics.items():
+            group_metrics = group_data["metrics"]
+            labels = group_data["labels"]
             values=[m.value for m in group_metrics]
 
             rollup=RollupMetrics(

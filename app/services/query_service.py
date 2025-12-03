@@ -190,19 +190,13 @@ class QueryService:
             return results
         return []
     
-
-        
-  
-  async def query_raw_data(
+    async def query_raw_data(
         self,
         metric_name: str,
         start_time: datetime,
         end_time: datetime,
         labels: Dict[str, str] = None
     ) -> Dict:
-        """
-        Query raw data without any aggregation
-        """
         normalized_labels = normalize_labels(labels) if labels else {}
         
         data_points = await self._query_raw_data(
@@ -229,9 +223,6 @@ class QueryService:
         window: str,
         labels: Dict[str, str] = None
     ) -> Dict:
-        """
-        Query pre-computed rollup data
-        """
         valid_windows = ["1m", "5m", "1h"]
         if window not in valid_windows:
             raise ValueError(f"Invalid window '{window}'. Must be one of: {valid_windows}")
@@ -255,7 +246,7 @@ class QueryService:
                     "min": dp["min"],
                     "max": dp["max"],
                     "avg": dp["avg"],
-                    "sum": dp.get("sum", dp["avg"] * dp["count"]),  # Calculate sum if not present
+                    "sum": dp.get("sum", dp["avg"] * dp["count"]),
                     "count": dp["count"]
                 }
                 for dp in data_points

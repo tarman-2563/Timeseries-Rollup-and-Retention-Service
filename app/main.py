@@ -22,15 +22,15 @@ app.include_router(rollupRouter)
 def on_startup():
     fix_schema()
 
-@app.get("/")
+@app.get("/", tags=["health"])
 def home():
     return {"message":"OK"}
 
-@app.get("/health")
+@app.get("/health", tags=["health"])
 def health_check():
     return {"message":"Timeseries service is up and running"}
 
-@app.get("/db/status")
+@app.get("/db/status", tags=["health"])
 def db_status(db: Session = Depends(get_db)):
     try:
         db.execute(text("SELECT 1"))

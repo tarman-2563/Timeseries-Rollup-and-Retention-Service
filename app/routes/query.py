@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 from typing import Optional, Dict
 
-queryRouter=APIRouter()
+queryRouter=APIRouter(tags=["query"])
 
 @queryRouter.post("/query",response_model=QueryResponseSchema,status_code=status.HTTP_200_OK)
 
