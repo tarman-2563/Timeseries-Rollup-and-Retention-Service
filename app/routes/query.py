@@ -30,7 +30,11 @@ async def query_metrics(
                 end_time=query.end_time,
                 interval_seconds=interval_seconds
             )
-            results.points = filled_points
+            return QueryResponseSchema(
+                metric_name=results.metric_name,
+                function=results.function,
+                points=filled_points
+            )
         
         return results
     
