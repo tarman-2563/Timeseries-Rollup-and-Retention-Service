@@ -3,4 +3,3 @@ venv/
 *.pyc
 .vscode/
 __pycache_/
-OVERVIEW.md
