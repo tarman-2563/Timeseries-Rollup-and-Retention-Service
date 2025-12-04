@@ -95,6 +95,7 @@ class QueryService:
                 "min":r.min,
                 "max":r.max,
                 "avg":r.avg,
+                "sum":r.sum,
                 "count":r.count
             }
             for r in results
@@ -209,7 +210,7 @@ class QueryService:
         return {
             "metric_name": metric_name,
             "points": [
-                {"timestamp": dp["timestamp"], "value": dp["value"]}
+                DataPointSchema(timestamp=dp["timestamp"], value=dp["value"])
                 for dp in data_points
             ],
             "total_points": len(data_points)
@@ -237,18 +238,20 @@ class QueryService:
             window
         )
         
+        from app.schemas.query import RollupDataPoint
+        
         return {
             "metric_name": metric_name,
             "window": window,
             "points": [
-                {
-                    "timestamp": dp["timestamp"],
-                    "min": dp["min"],
-                    "max": dp["max"],
-                    "avg": dp["avg"],
-                    "sum": dp.get("sum", dp["avg"] * dp["count"]),
-                    "count": dp["count"]
-                }
+                RollupDataPoint(
+                    timestamp=dp["timestamp"],
+                    min=dp["min"],
+                    max=dp["max"],
+                    avg=dp["avg"],
+                    sum=dp["sum"],
+                    count=dp["count"]
+                )
                 for dp in data_points
             ],
             "total_points": len(data_points)

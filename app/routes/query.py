@@ -23,14 +23,14 @@ async def query_metrics(
         if not results:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="No metrics found for the given query")
         
-        if fill_gaps and results.get("points"):
+        if fill_gaps and results.points:
             filled_points = query_service.fill_gaps(
-                data_points=results["points"],
+                data_points=results.points,
                 start_time=query.start_time,
                 end_time=query.end_time,
                 interval_seconds=interval_seconds
             )
-            results["points"] = filled_points
+            results.points = filled_points
         
         return results
     
