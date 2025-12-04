@@ -1,8 +1,6 @@
 from fastapi import FastAPI, Depends
-from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from app.db import engine, get_db, Base
-from app.models import raw_metrics
 from app.routes.ingest import ingestRouter
 from app.routes.query import queryRouter
 from app.routes.metrics import metricsRouter
@@ -15,14 +13,6 @@ from sqlalchemy import text
 Base.metadata.create_all(bind=engine)
 
 app=FastAPI()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 app.include_router(ingestRouter)
 app.include_router(queryRouter)

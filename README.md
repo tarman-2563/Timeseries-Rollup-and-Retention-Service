@@ -118,6 +118,19 @@ curl -X POST "http://localhost:8000/query" \
 
 Available functions: `avg`, `sum`, `min`, `max`, `count`, `rate`, `raw`
 
+**Query with gap-filling (POST):**
+```bash
+curl -X POST "http://localhost:8000/query?fill_gaps=true&interval_seconds=60" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "metric_name": "cpu_usage",
+    "start_time": "2025-12-03T00:00:00Z",
+    "end_time": "2025-12-03T01:00:00Z",
+    "labels": {"host": "server1"},
+    "function": "avg"
+  }'
+```
+
 **Query raw data (GET):**
 ```bash
 curl "http://localhost:8000/query/raw?metric_name=cpu_usage&start_time=2025-12-03T00:00:00Z&end_time=2025-12-03T23:59:59Z"
@@ -126,6 +139,11 @@ curl "http://localhost:8000/query/raw?metric_name=cpu_usage&start_time=2025-12-0
 **Query raw data with labels:**
 ```bash
 curl "http://localhost:8000/query/raw?metric_name=cpu_usage&start_time=2025-12-03T00:00:00Z&end_time=2025-12-03T23:59:59Z&labels=%7B%22host%22:%22server1%22%7D"
+```
+
+**Query raw data with gap-filling:**
+```bash
+curl "http://localhost:8000/query/raw?metric_name=cpu_usage&start_time=2025-12-03T00:00:00Z&end_time=2025-12-03T01:00:00Z&fill_gaps=true&interval_seconds=60"
 ```
 
 **Query rollup data (GET):**
