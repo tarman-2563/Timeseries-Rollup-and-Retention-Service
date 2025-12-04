@@ -1,4 +1,6 @@
 from fastapi import FastAPI, Depends
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from app.db import engine, get_db, Base
 from app.routes.ingest import ingestRouter
@@ -14,6 +16,8 @@ Base.metadata.create_all(bind=engine)
 
 app=FastAPI()
 
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 app.include_router(ingestRouter)
 app.include_router(queryRouter)
 app.include_router(metricsRouter)
@@ -25,9 +29,13 @@ app.include_router(backfillRouter)
 def on_startup():
     fix_schema()
 
-@app.get("/", tags=["health"])
+@app.get("/", tags=["dashboard"])
 def home():
-    return {"message":"OK"}
+    return FileResponse("static/dashboard.html")
+
+@app.get("/dashboard", tags=["dashboard"])
+def dashboard():
+    return FileResponse("static/dashboard.html")
 
 @app.get("/health", tags=["health"])
 def health_check():

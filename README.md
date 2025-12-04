@@ -45,7 +45,14 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 - `POST /backfill/import` - Import historical data in bulk
 
 ### Dashboard
-- `GET /dashboard` - Interactive web dashboard for visualization
+- `GET /` or `GET /dashboard` - Minimal dashboard with 3 components:
+  1. **Line Chart** - Visualize metric over time
+  2. **Metric Selector** - Choose metric, rollup (raw/1m/5m/1h), and time range
+  3. **Data Table** - View raw API response data
+
+**Access:** Open http://localhost:8000 in your browser
+
+
 
 ## Background Jobs
 
