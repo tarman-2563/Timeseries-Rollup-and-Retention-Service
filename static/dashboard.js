@@ -1,10 +1,7 @@
-// API Base URL
 const API_URL = window.location.origin;
 
-// Chart instance
 let chart = null;
 
-// DOM Elements
 const elements = {
     metricSelect: document.getElementById('metricSelect'),
     rollupSelect: document.getElementById('rollupSelect'),
@@ -14,14 +11,12 @@ const elements = {
     dataTable: document.getElementById('dataTable')
 };
 
-// Initialize
 async function init() {
     await loadMetrics();
     setupEventListeners();
     initChart();
 }
 
-// Setup event listeners
 function setupEventListeners() {
     elements.metricSelect.addEventListener('change', loadData);
     elements.rollupSelect.addEventListener('change', loadData);
@@ -29,7 +24,6 @@ function setupEventListeners() {
     elements.refreshBtn.addEventListener('click', loadData);
 }
 
-// Load available metrics
 async function loadMetrics() {
     try {
         const response = await fetch(`${API_URL}/metrics/list?page=1&page_size=100`);
@@ -45,18 +39,17 @@ async function loadMetrics() {
                 elements.metricSelect.appendChild(option);
             });
             
-            // Load data for first metric
             await loadData();
         } else {
             elements.metricSelect.innerHTML = '<option value="">No metrics available</option>';
         }
-    } catch (error) {
+    } 
+    catch (error) {
         console.error('Error loading metrics:', error);
         showStatus('Error loading metrics', 'error');
     }
 }
 
-// Load data
 async function loadData() {
     const metric = elements.metricSelect.value;
     const rollup = elements.rollupSelect.value;
@@ -71,29 +64,25 @@ async function loadData() {
         let data;
         
         if (rollup === 'raw') {
-            // Query raw data
             const response = await fetch(`${API_URL}/query/raw?metric_name=${metric}&start_time=${startTime}&end_time=${endTime}`);
             data = await response.json();
         } else {
-            // Query rollup data
             const response = await fetch(`${API_URL}/query/rollup?metric_name=${metric}&start_time=${startTime}&end_time=${endTime}&window=${rollup}`);
             data = await response.json();
         }
         
-        // Update chart
         updateChart(data, rollup);
         
-        // Update table
         updateTable(data, rollup);
         
         showStatus(`Loaded ${data.points ? data.points.length : 0} data points`, 'success');
-    } catch (error) {
+    }
+    catch (error) {
         console.error('Error loading data:', error);
         showStatus('Error loading data', 'error');
     }
 }
 
-// Initialize chart
 function initChart() {
     const ctx = document.getElementById('chart').getContext('2d');
     chart = new Chart(ctx, {
@@ -138,7 +127,6 @@ function initChart() {
     });
 }
 
-// Update chart
 function updateChart(data, rollup) {
     if (!chart || !data.points) return;
     
@@ -151,7 +139,6 @@ function updateChart(data, rollup) {
     chart.update();
 }
 
-// Update table
 function updateTable(data, rollup) {
     if (!data.points || data.points.length === 0) {
         elements.dataTable.innerHTML = '<tr><td colspan="2" style="text-align: center; color: #999;">No data available</td></tr>';
@@ -172,7 +159,6 @@ function updateTable(data, rollup) {
     elements.dataTable.innerHTML = html;
 }
 
-// Get time range
 function getTimeRange(range) {
     const endTime = new Date();
     const startTime = new Date();
@@ -192,10 +178,9 @@ function getTimeRange(range) {
     return {
         startTime: startTime.toISOString(),
         endTime: endTime.toISOString()
-    };
+    }
 }
 
-// Format time for chart
 function formatTime(timestamp) {
     const date = new Date(timestamp);
     return date.toLocaleString('en-US', {
@@ -203,10 +188,9 @@ function formatTime(timestamp) {
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit'
-    });
+    })
 }
 
-// Format time for table
 function formatFullTime(timestamp) {
     const date = new Date(timestamp);
     return date.toLocaleString('en-US', {
@@ -216,10 +200,9 @@ function formatFullTime(timestamp) {
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit'
-    });
+    })
 }
 
-// Show status
 function showStatus(message, type) {
     elements.status.textContent = message;
     elements.status.className = `status ${type}`;
@@ -232,5 +215,4 @@ function showStatus(message, type) {
     }
 }
 
-// Initialize on load
 document.addEventListener('DOMContentLoaded', init);
