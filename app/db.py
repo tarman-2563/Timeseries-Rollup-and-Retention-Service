@@ -11,7 +11,7 @@ DATABASE_URL=os.getenv("DB_URL")
 if not DATABASE_URL:
     raise ValueError("Set the database url in the DB_URL environment variable")
 
-engine=create_engine(DATABASE_URL)
+engine=create_engine(DATABASE_URL,connect_args={"sslmode": "require"})
 
 SessionLocal=sessionmaker(autocommit=False,autoflush=False,bind=engine)
 
