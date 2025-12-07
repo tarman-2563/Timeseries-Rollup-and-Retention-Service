@@ -2,7 +2,7 @@ from fastapi import APIRouter, status, Query, Depends
 from sqlalchemy.orm import Session
 from app.db import get_db
 from app.controllers.query_controller import QueryController
-from app.schemas.query import QueryResponseSchema, RawQueryResponse, RollupQueryResponse, QuerySchema
+from app.schemas.query import RawQueryResponse, RollupQueryResponse
 from datetime import datetime
 from typing import Optional
 
@@ -22,16 +22,6 @@ async def get_metric_names(db: Session = Depends(get_db)):
         }
     except Exception as e:
         return {"metrics": [], "total": 0, "error": str(e)}
-
-
-@queryRouter.post("/query", response_model=QueryResponseSchema, status_code=status.HTTP_200_OK)
-async def query_metrics(
-    query: QuerySchema,
-    fill_gaps: bool = Query(False, description="Fill missing data points with nulls"),
-    interval_seconds: int = Query(60, description="Interval in seconds for gap filling"),
-    db: Session = Depends(get_db)
-):
-    return await QueryController.query_metrics(query, fill_gaps, interval_seconds, db)
 
 
 @queryRouter.get("/query/raw", response_model=RawQueryResponse, status_code=status.HTTP_200_OK)

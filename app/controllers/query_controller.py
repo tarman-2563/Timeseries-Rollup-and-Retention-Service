@@ -1,53 +1,13 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from app.services.query_service import QueryService
-from app.schemas.query import QuerySchema, QueryResponseSchema, RawQueryResponse, RollupQueryResponse
+from app.schemas.query import RawQueryResponse, RollupQueryResponse
 from datetime import datetime
 from typing import Optional, Dict
 import json
 
 
 class QueryController:
-    
-    @staticmethod
-    async def query_metrics(
-        query: QuerySchema,
-        fill_gaps: bool,
-        interval_seconds: int,
-        db: Session
-    ) -> QueryResponseSchema:
-        try:
-            query_service = QueryService(db)
-            results = await query_service.query_metrics(query)
-            
-            if not results:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="No metrics found for the given query"
-                )
-            
-            if fill_gaps and results.points:
-                filled_points = query_service.fill_gaps(
-                    data_points=results.points,
-                    start_time=query.start_time,
-                    end_time=query.end_time,
-                    interval_seconds=interval_seconds
-                )
-                return QueryResponseSchema(
-                    metric_name=results.metric_name,
-                    function=results.function,
-                    points=filled_points
-                )
-            
-            return results
-            
-        except HTTPException:
-            raise
-        except Exception as e:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=str(e)
-            )
     
     @staticmethod
     async def query_raw_metrics(

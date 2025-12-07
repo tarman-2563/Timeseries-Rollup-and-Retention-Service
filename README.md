@@ -9,7 +9,7 @@ A FastAPI-based time series metrics ingestion and query service with automatic r
 pip install -r requirements.txt
 ```
 
-2. Configure database in `.env` file (already configured)
+2. Configure database in `.env` file
 
 3. Run the application:
 ```bash
@@ -19,24 +19,16 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ## API Endpoints
 
 ### Health
-- `GET /` - Basic health check
 - `GET /health` - Service status
 - `GET /db/status` - Database connection status
 
 ### Ingestion
 - `POST /metrics/ingest` - Ingest a single metric
 
-### Metrics Discovery
-- `GET /metrics/list` - List all metrics with pagination
-- `GET /metrics/{metric_name}/info` - Get detailed metric information
-
 ### Query
-- `POST /query` - Query with aggregation (auto-selects optimal source)
+- `GET /metrics/names` - Get list of available metric names
 - `GET /query/raw` - Fetch raw data without aggregation
 - `GET /query/rollup` - Fetch pre-computed rollup data
-
-### Rollups
-- `GET /rollups` - List all available rollups
 
 ### Anomaly Detection
 - `GET /anomaly/detect` - Detect anomalies using z-score analysis
@@ -45,23 +37,22 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 - `POST /backfill/import` - Import historical data in bulk
 
 ### Dashboard
-- `GET /` or `GET /dashboard` - Minimal dashboard with 3 components:
-  1. **Line Chart** - Visualize metric over time
-  2. **Metric Selector** - Choose metric, rollup (raw/1m/5m/1h), and time range
-  3. **Data Table** - View raw API response data
+- `GET /` or `GET /dashboard` - Interactive dashboard with:
+  - Line chart visualization
+  - Metric selector with rollup options (raw/1m/5m/1h)
+  - Time range selector (1h/24h/7d)
+  - Data table view
 
-**Access:** Open http://localhost:8000 in your browser
-
-
+Access: http://localhost:8000
 
 ## Background Jobs
 
-### Rollup Job (runs every 60 seconds)
+### Rollup Job
 ```bash
 python -m app.jobs.rollup_job
 ```
 
-### Retention Job (runs every 24 hours)
+### Retention Job
 ```bash
 python -m app.jobs.retention_job
 ```
@@ -79,7 +70,6 @@ Patterns: noise, sine_wave, linear_trend, spike, combined
 
 ### Ingestion
 
-**Ingest a metric:**
 ```bash
 curl -X POST "http://localhost:8000/metrics/ingest" \
   -H "Content-Type: application/json" \
@@ -91,97 +81,32 @@ curl -X POST "http://localhost:8000/metrics/ingest" \
   }'
 ```
 
-### Metrics Discovery
-
-**List all metrics:**
-```bash
-curl "http://localhost:8000/metrics/list?page=1&page_size=10"
-```
-
-**Search metrics:**
-```bash
-curl "http://localhost:8000/metrics/list?search=cpu"
-```
-
-**Get metric details:**
-```bash
-curl "http://localhost:8000/metrics/cpu_usage/info"
-```
-
 ### Query
 
-**Query with aggregation (POST):**
+**Get available metrics:**
 ```bash
-curl -X POST "http://localhost:8000/query" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "metric_name": "cpu_usage",
-    "start_time": "2025-12-03T00:00:00Z",
-    "end_time": "2025-12-03T23:59:59Z",
-    "labels": {"host": "server1"},
-    "function": "avg"
-  }'
+curl "http://localhost:8000/metrics/names"
 ```
 
-Available functions: `avg`, `sum`, `min`, `max`, `count`, `rate`, `raw`
-
-**Query with gap-filling (POST):**
-```bash
-curl -X POST "http://localhost:8000/query?fill_gaps=true&interval_seconds=60" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "metric_name": "cpu_usage",
-    "start_time": "2025-12-03T00:00:00Z",
-    "end_time": "2025-12-03T01:00:00Z",
-    "labels": {"host": "server1"},
-    "function": "avg"
-  }'
-```
-
-**Query raw data (GET):**
+**Query raw data:**
 ```bash
 curl "http://localhost:8000/query/raw?metric_name=cpu_usage&start_time=2025-12-03T00:00:00Z&end_time=2025-12-03T23:59:59Z"
 ```
 
-**Query raw data with labels:**
-```bash
-curl "http://localhost:8000/query/raw?metric_name=cpu_usage&start_time=2025-12-03T00:00:00Z&end_time=2025-12-03T23:59:59Z&labels=%7B%22host%22:%22server1%22%7D"
-```
-
-**Query raw data with gap-filling:**
-```bash
-curl "http://localhost:8000/query/raw?metric_name=cpu_usage&start_time=2025-12-03T00:00:00Z&end_time=2025-12-03T01:00:00Z&fill_gaps=true&interval_seconds=60"
-```
-
-**Query rollup data (GET):**
+**Query rollup data:**
 ```bash
 curl "http://localhost:8000/query/rollup?metric_name=cpu_usage&start_time=2025-12-03T00:00:00Z&end_time=2025-12-03T12:00:00Z&window=5m"
 ```
 
-Available windows: `1m`, `5m`, `1h`
-
-### Rollups
-
-**List all rollups:**
-```bash
-curl "http://localhost:8000/rollups"
-```
-
-**List rollups for specific metric:**
-```bash
-curl "http://localhost:8000/rollups?metric_name=cpu_usage"
-```
 
 ### Anomaly Detection
 
-**Detect anomalies:**
 ```bash
 curl "http://localhost:8000/anomaly/detect?metric_name=cpu_usage&start_time=2025-12-03T00:00:00Z&end_time=2025-12-03T23:59:59Z&threshold=3.0"
 ```
 
 ### Backfill
 
-**Import historical data:**
 ```bash
 curl -X POST "http://localhost:8000/backfill/import" \
   -H "Content-Type: application/json" \
@@ -203,3 +128,21 @@ curl -X POST "http://localhost:8000/backfill/import" \
   }'
 ```
 
+## Features
+
+- Real-time metric ingestion
+- Automatic rollup generation (1m, 5m, 1h)
+- Configurable retention policies
+- Label-based filtering
+- Anomaly detection using z-score analysis
+- Interactive web dashboard
+- Bulk historical data import
+- Cardinality limit protection
+
+## Architecture
+
+- **FastAPI** - High-performance async API framework
+- **PostgreSQL** - Time series data storage with JSONB labels
+- **SQLAlchemy** - ORM for database operations
+- **Chart.js** - Dashboard visualizations
+- **Background Jobs** - Automated rollup and retention management
