@@ -8,6 +8,22 @@ from typing import Optional
 
 queryRouter = APIRouter(tags=["query"])
 
+@queryRouter.get("/metrics/names", status_code=status.HTTP_200_OK)
+async def get_metric_names(db: Session = Depends(get_db)):
+    """Get list of distinct metric names from raw_metrics table"""
+    from app.models.raw_metrics import RawMetrics
+    from sqlalchemy import distinct
+    
+    try:
+        metric_names = db.query(distinct(RawMetrics.metric_name)).all()
+        return {
+            "metrics": [name[0] for name in metric_names if name[0]],
+            "total": len(metric_names)
+        }
+    except Exception as e:
+        return {"metrics": [], "total": 0, "error": str(e)}
+
+
 @queryRouter.post("/query", response_model=QueryResponseSchema, status_code=status.HTTP_200_OK)
 async def query_metrics(
     query: QuerySchema,

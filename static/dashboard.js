@@ -26,27 +26,35 @@ function setupEventListeners() {
 
 async function loadMetrics() {
     try {
-        const response = await fetch(`${API_URL}/metrics/list?page=1&page_size=100`);
+        const response = await fetch(`${API_URL}/metrics/names`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
         
         elements.metricSelect.innerHTML = '';
         
         if (data.metrics && data.metrics.length > 0) {
-            data.metrics.forEach(metric => {
+            data.metrics.forEach(metricName => {
                 const option = document.createElement('option');
-                option.value = metric.metric_name;
-                option.textContent = metric.metric_name;
+                option.value = metricName;
+                option.textContent = metricName;
                 elements.metricSelect.appendChild(option);
             });
             
+            showStatus(`Loaded ${data.metrics.length} metrics`, 'success');
             await loadData();
         } else {
             elements.metricSelect.innerHTML = '<option value="">No metrics available</option>';
+            showStatus('No metrics found in database', 'error');
         }
     } 
     catch (error) {
         console.error('Error loading metrics:', error);
-        showStatus('Error loading metrics', 'error');
+        elements.metricSelect.innerHTML = '<option value="">Error loading metrics</option>';
+        showStatus(`Error loading metrics: ${error.message}`, 'error');
     }
 }
 
@@ -146,7 +154,14 @@ function initChart() {
 }
 
 function updateChart(data, rollup) {
-    if (!chart || !data.points) return;
+    if (!chart) return;
+    
+    if (!data || !data.points || data.points.length === 0) {
+        chart.data.labels = [];
+        chart.data.datasets[0].data = [];
+        chart.update();
+        return;
+    }
     
     const labels = data.points.map(p => formatTime(p.timestamp));
     const values = data.points.map(p => rollup === 'raw' ? p.value : p.avg);
@@ -154,6 +169,8 @@ function updateChart(data, rollup) {
     chart.data.labels = labels;
     chart.data.datasets[0].data = values;
     chart.data.datasets[0].label = `${data.metric_name} (${rollup})`;
+    chart.data.datasets[0].borderColor = '#667eea';
+    chart.data.datasets[0].backgroundColor = 'rgba(102, 126, 234, 0.1)';
     chart.update();
 }
 
