@@ -3,3 +3,4 @@ venv/
 *.pyc
 .vscode/
 __pycache_/
+rollup_state.json
