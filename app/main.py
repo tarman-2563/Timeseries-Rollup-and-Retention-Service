@@ -5,8 +5,6 @@ from sqlalchemy.orm import Session
 from app.db import engine, get_db, Base
 from app.routes.ingest import ingestRouter
 from app.routes.query import queryRouter
-from app.routes.metrics import metricsRouter
-from app.routes.rollup import rollupRouter
 from app.routes.anomaly import anomalyRouter
 from app.routes.backfill import backfillRouter
 from app.schema_fix import fix_schema
@@ -20,8 +18,6 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(ingestRouter)
 app.include_router(queryRouter)
-app.include_router(metricsRouter)
-app.include_router(rollupRouter)
 app.include_router(anomalyRouter)
 app.include_router(backfillRouter)
 

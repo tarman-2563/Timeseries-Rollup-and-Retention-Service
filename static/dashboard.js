@@ -62,24 +62,42 @@ async function loadData() {
     try {
         const { startTime, endTime } = getTimeRange(timeRange);
         let data;
+        let response;
         
         if (rollup === 'raw') {
-            const response = await fetch(`${API_URL}/query/raw?metric_name=${metric}&start_time=${startTime}&end_time=${endTime}`);
-            data = await response.json();
+            response = await fetch(`${API_URL}/query/raw?metric_name=${metric}&start_time=${startTime}&end_time=${endTime}`);
         } else {
-            const response = await fetch(`${API_URL}/query/rollup?metric_name=${metric}&start_time=${startTime}&end_time=${endTime}&window=${rollup}`);
-            data = await response.json();
+            response = await fetch(`${API_URL}/query/rollup?metric_name=${metric}&start_time=${startTime}&end_time=${endTime}&window=${rollup}`);
         }
         
-        updateChart(data, rollup);
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+        }
         
+        data = await response.json();
+        
+        updateChart(data, rollup);
         updateTable(data, rollup);
         
-        showStatus(`Loaded ${data.points ? data.points.length : 0} data points`, 'success');
+        const pointCount = data.points ? data.points.length : 0;
+        if (pointCount === 0) {
+            showStatus('No data available for the selected time range', 'error');
+        } else {
+            showStatus(`Loaded ${pointCount} data points`, 'success');
+        }
     }
     catch (error) {
         console.error('Error loading data:', error);
-        showStatus('Error loading data', 'error');
+        showStatus(`Error: ${error.message}`, 'error');
+        
+        // Clear chart and table on error
+        if (chart) {
+            chart.data.labels = [];
+            chart.data.datasets[0].data = [];
+            chart.update();
+        }
+        elements.dataTable.innerHTML = '<tr><td colspan="2" style="text-align: center; color: #999;">Error loading data</td></tr>';
     }
 }
 

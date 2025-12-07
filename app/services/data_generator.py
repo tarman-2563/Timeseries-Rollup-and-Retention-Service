@@ -64,7 +64,7 @@ class DataGenerator:
     
     def generate_value(self,t:float,pattern:str)->float:
         if pattern=="noise":
-            return self.generate_random_noise(base=50.0,variance=5.0)
+            return self.generate_random_noise(base=100.0,variance=10.0)
         elif pattern=="sine_wave":
             return self.generate_sine_wave(t,amplitude=20.0,period=60.0)+50.0
         elif pattern=="linear_trend":

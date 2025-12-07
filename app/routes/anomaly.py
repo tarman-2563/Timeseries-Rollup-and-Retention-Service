@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 from app.db import get_db
-from app.services.anomaly_service import AnomalyService
+from app.controllers.anomaly_controller import AnomalyController
 from app.schemas.anomaly import AnomalyDetectionResponse
 from datetime import datetime
 from typing import Optional
@@ -17,36 +17,6 @@ async def detect_anomalies(
     labels: Optional[str] = Query(None, description="Labels as JSON string"),
     db: Session = Depends(get_db)
 ):
-    try:
-        import json
-        parsed_labels = json.loads(labels) if labels else {}
-        
-        anomaly_service = AnomalyService(db)
-        result = anomaly_service.detect_anomalies(
-            metric_name=metric_name,
-            start_time=start_time,
-            end_time=end_time,
-            threshold=threshold,
-            labels=parsed_labels
-        )
-        
-        if result.total_points == 0:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="No data found for the given query"
-            )
-        
-        return result
-    
-    except json.JSONDecodeError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid labels format. Must be valid JSON string."
-        )
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error detecting anomalies: {str(e)}"
-        )
+    return await AnomalyController.detect_anomalies(
+        metric_name, start_time, end_time, threshold, labels, db
+    )
