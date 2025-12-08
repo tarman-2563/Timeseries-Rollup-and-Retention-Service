@@ -5,15 +5,13 @@ from app.controllers.query_controller import QueryController
 from app.schemas.query import RawQueryResponse, RollupQueryResponse
 from datetime import datetime
 from typing import Optional
+from app.models.raw_metrics import RawMetrics
+from sqlalchemy import distinct
 
 queryRouter = APIRouter(tags=["query"])
 
 @queryRouter.get("/metrics/names", status_code=status.HTTP_200_OK)
 async def get_metric_names(db: Session = Depends(get_db)):
-    """Get list of distinct metric names from raw_metrics table"""
-    from app.models.raw_metrics import RawMetrics
-    from sqlalchemy import distinct
-    
     try:
         metric_names = db.query(distinct(RawMetrics.metric_name)).all()
         return {
