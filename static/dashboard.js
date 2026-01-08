@@ -26,7 +26,8 @@ function setupEventListeners() {
 
 async function loadMetrics() {
     try {
-        const response = await fetch(`${API_URL}/metrics/names`);
+        const url = `${API_URL}/metrics/names`;
+        const response = await fetch(url);
         
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -34,21 +35,36 @@ async function loadMetrics() {
         
         const data = await response.json();
         
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
         elements.metricSelect.innerHTML = '';
         
         if (data.metrics && data.metrics.length > 0) {
-            data.metrics.forEach(metricName => {
-                const option = document.createElement('option');
-                option.value = metricName;
-                option.textContent = metricName;
-                elements.metricSelect.appendChild(option);
-            });
+            // Filter to only show cpu_usage
+            const filteredMetrics = data.metrics.filter(metricName => metricName === 'cpu_usage');
             
-            showStatus(`Loaded ${data.metrics.length} metrics`, 'success');
-            await loadData();
+            if (filteredMetrics.length > 0) {
+                filteredMetrics.forEach(metricName => {
+                    const option = document.createElement('option');
+                    option.value = metricName;
+                    option.textContent = metricName;
+                    elements.metricSelect.appendChild(option);
+                });
+                
+                showStatus(`Loaded ${filteredMetrics.length} metric (${data.total_records || 0} total records)`, 'success');
+                await loadData();
+            } else {
+                elements.metricSelect.innerHTML = '<option value="">cpu_usage not found</option>';
+                showStatus('cpu_usage metric not found in database', 'error');
+            }
         } else {
             elements.metricSelect.innerHTML = '<option value="">No metrics available</option>';
-            showStatus('No metrics found in database', 'error');
+            const msg = data.total_records === 0 
+                ? 'Database is empty. Please ingest some metrics first.' 
+                : 'No metrics found in database';
+            showStatus(msg, 'error');
         }
     } 
     catch (error) {
@@ -71,12 +87,15 @@ async function loadData() {
         const { startTime, endTime } = getTimeRange(timeRange);
         let data;
         let response;
+        let url;
         
         if (rollup === 'raw') {
-            response = await fetch(`${API_URL}/query/raw?metric_name=${metric}&start_time=${startTime}&end_time=${endTime}`);
+            url = `${API_URL}/query/raw?metric_name=${metric}&start_time=${startTime}&end_time=${endTime}`;
         } else {
-            response = await fetch(`${API_URL}/query/rollup?metric_name=${metric}&start_time=${startTime}&end_time=${endTime}&window=${rollup}`);
+            url = `${API_URL}/query/rollup?metric_name=${metric}&start_time=${startTime}&end_time=${endTime}&window=${rollup}`;
         }
+        
+        response = await fetch(url);
         
         if (!response.ok) {
             const errorData = await response.json();
@@ -90,7 +109,7 @@ async function loadData() {
         
         const pointCount = data.points ? data.points.length : 0;
         if (pointCount === 0) {
-            showStatus('No data available for the selected time range', 'error');
+            showStatus(`No data found for ${timeRange} (${startTime.split('T')[0]} to ${endTime.split('T')[0]})`, 'error');
         } else {
             showStatus(`Loaded ${pointCount} data points`, 'success');
         }
@@ -99,7 +118,6 @@ async function loadData() {
         console.error('Error loading data:', error);
         showStatus(`Error: ${error.message}`, 'error');
         
-        // Clear chart and table on error
         if (chart) {
             chart.data.labels = [];
             chart.data.datasets[0].data = [];
@@ -195,8 +213,8 @@ function updateTable(data, rollup) {
 }
 
 function getTimeRange(range) {
-    const endTime = new Date();
-    const startTime = new Date();
+    let endTime = new Date();
+    let startTime = new Date();
     
     switch (range) {
         case '1h':
@@ -208,12 +226,26 @@ function getTimeRange(range) {
         case '7d':
             startTime.setDate(startTime.getDate() - 7);
             break;
+        case '30d':
+            startTime.setDate(startTime.getDate() - 30);
+            break;
+        case 'all':
+            startTime.setFullYear(2020);
+            break;
+        case 'manual_2026':
+            startTime = new Date('2026-01-01T00:00:00Z');
+            endTime = new Date('2026-12-31T23:59:59Z');
+            break;
+        case 'manual_2025':
+            startTime = new Date('2025-01-01T00:00:00Z');
+            endTime = new Date('2025-12-31T23:59:59Z');
+            break;
     }
     
     return {
         startTime: startTime.toISOString(),
         endTime: endTime.toISOString()
-    }
+    };
 }
 
 function formatTime(timestamp) {
